@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
-import { ArrowDownRight, ArrowUpRight, ExternalLink, Eye } from 'lucide-react'
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react'
+import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink, Eye } from 'lucide-react'
 import { projects, type Project } from '../../data/projects'
 import styles from './Projects.module.css'
 
 export function Projects() {
   const featuredProjects = projects.filter((project) => project.featured)
-  const complementaryProjects = projects.filter((project) => !project.featured)
+  const complementaryRecords = projects.filter((project) => !project.featured)
+  const realComplementaryProjects = complementaryRecords.filter((project) => !project.placeholder)
+  const exampleCards = complementaryRecords.filter((project) => project.placeholder)
+  const complementaryProjects = [
+    ...realComplementaryProjects,
+    ...exampleCards.slice(0, Math.max(0, 5 - realComplementaryProjects.length)),
+  ]
 
   return (
     <section className={styles.section} id="projects" aria-label="Projetos">
@@ -13,8 +19,8 @@ export function Projects() {
         {featuredProjects.map((project, index) => <FeaturedProject key={project.id} project={project} index={index} />)}
       </div>
       {complementaryProjects.length > 0 && <section className={styles.complementary} aria-labelledby="complementary-title">
-        <div className={styles.complementaryHeading}><span>Estudo complementar</span><p id="complementary-title">Projetos menores e experimentos</p></div>
-        <div className={styles.complementaryList}>{complementaryProjects.map((project, index) => <ComplementaryProject key={project.id} project={project} index={index} />)}</div>
+        <h2 className={styles.complementaryHeading} id="complementary-title">Projetos complementares</h2>
+        <ComplementaryCarousel projects={complementaryProjects} />
       </section>}
     </section>
   )
@@ -67,37 +73,157 @@ function FeaturedProject({ project, index }: { project: Project; index: number }
   )
 }
 
-function ComplementaryProject({ project, index }: { project: Project; index: number }) {
-  const [expanded, setExpanded] = useState(false)
-  const moreButtonRef = useRef<HTMLButtonElement>(null)
-  const lessButtonRef = useRef<HTMLButtonElement>(null)
-  const detailsToolbarRef = useRef<HTMLDivElement>(null)
+function ComplementaryCarousel({ projects: carouselProjects }: { projects: Project[] }) {
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const groupRef = useRef<HTMLDivElement>(null)
+  const pausedByCard = useRef(false)
+  const pausedForManualNavigation = useRef(false)
+  const pointerOverCard = useRef(false)
+  const dwellTimer = useRef<number | undefined>(undefined)
+  const resumeTimer = useRef<number | undefined>(undefined)
+  const manualTimer = useRef<number | undefined>(undefined)
+
+  const clearTimer = (timer: { current: number | undefined }) => {
+    if (timer.current !== undefined) window.clearTimeout(timer.current)
+    timer.current = undefined
+  }
+
+  const scheduleDwellPause = () => {
+    clearTimer(dwellTimer)
+    dwellTimer.current = window.setTimeout(() => {
+      dwellTimer.current = undefined
+      if (!pointerOverCard.current) return
+      pausedByCard.current = true
+    }, 300)
+  }
+
+  const handleCardPointerEnter = (event: ReactPointerEvent<HTMLElement>) => {
+    if (event.pointerType !== 'mouse') return
+    pointerOverCard.current = true
+    clearTimer(resumeTimer)
+    if (!pausedByCard.current) scheduleDwellPause()
+  }
+
+  const handleCardPointerLeave = (event: ReactPointerEvent<HTMLElement>) => {
+    if (event.pointerType !== 'mouse') return
+    pointerOverCard.current = false
+    clearTimer(dwellTimer)
+    if (pausedByCard.current) {
+      clearTimer(resumeTimer)
+      resumeTimer.current = window.setTimeout(() => {
+        pausedByCard.current = false
+        resumeTimer.current = undefined
+      }, 200)
+    }
+  }
+
+  const pauseForManualNavigation = (duration = 1500) => {
+    pausedForManualNavigation.current = true
+    clearTimer(manualTimer)
+    manualTimer.current = window.setTimeout(() => {
+      pausedForManualNavigation.current = false
+      manualTimer.current = undefined
+    }, duration)
+  }
 
   useEffect(() => {
-    if (!expanded) return
-    requestAnimationFrame(() => {
-      detailsToolbarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      lessButtonRef.current?.focus({ preventScroll: true })
-    })
-  }, [expanded])
+    const viewport = viewportRef.current
+    const group = groupRef.current
+    if (!viewport || !group) return
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    let animationFrame = 0
+    let previousTime = 0
+
+    const animate = (time: number) => {
+      const paused = pausedByCard.current || pausedForManualNavigation.current || reducedMotion.matches
+      if (!paused && previousTime > 0) {
+        const track = group.parentElement
+        const gap = track ? Number.parseFloat(getComputedStyle(track).columnGap) || 0 : 0
+        const loopWidth = group.getBoundingClientRect().width + gap
+        if (loopWidth > 0) {
+          viewport.scrollLeft += Math.min((time - previousTime) / 1000, 0.05) * 24
+          if (viewport.scrollLeft >= loopWidth) viewport.scrollLeft -= loopWidth
+        }
+      }
+      previousTime = time
+      animationFrame = requestAnimationFrame(animate)
+    }
+
+    animationFrame = requestAnimationFrame(animate)
+    return () => {
+      cancelAnimationFrame(animationFrame)
+      clearTimer(dwellTimer)
+      clearTimer(resumeTimer)
+      clearTimer(manualTimer)
+    }
+  }, [])
+
+  const move = (direction: -1 | 1) => {
+    const viewport = viewportRef.current
+    const group = groupRef.current
+    const firstCard = group?.querySelector<HTMLElement>('[data-carousel-card]')
+    if (!viewport || !group || !firstCard) return
+    pauseForManualNavigation()
+    const track = group.parentElement
+    const gap = track ? Number.parseFloat(getComputedStyle(track).columnGap) || 0 : 0
+    const loopWidth = group.getBoundingClientRect().width + gap
+    const step = firstCard.getBoundingClientRect().width + gap
+    let destination = viewport.scrollLeft + direction * step
+    if (destination < 0) destination += loopWidth
+    else if (destination >= loopWidth) destination -= loopWidth
+    viewport.scrollTo({ left: destination, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+  }
 
   return (
-    <div className={styles.complementaryEntry}>
-      <article className={styles.complementaryProject}>
-        <ProjectVisual project={project} index={index + 3} />
-        <div className={styles.complementaryBody}>
-          <div className={styles.featureMeta}><span>{project.category}</span><span className={styles.status}>{project.status}</span></div>
-          <h3>{project.title}</h3>
-          <p>{project.summary}</p>
-          <div className={styles.featureTechs}>{project.technologies.map((technology) => <span key={technology}>{technology}</span>)}</div>
-          <div className={styles.featureActions}>
-            {project.demo && <a className={styles.demoButton} href={project.demo} target="_blank" rel="noreferrer"><ExternalLink size={15} aria-hidden="true" /> Abrir projeto</a>}
-            {!expanded && <button ref={moreButtonRef} type="button" className={styles.moreButton} aria-expanded="false" onClick={() => setExpanded(true)}>Ver mais <ArrowDownRight size={16} aria-hidden="true" /></button>}
+    <div
+      className={styles.carousel}
+      role="region"
+      aria-label="Projetos complementares"
+      aria-roledescription="carrossel"
+      onWheel={() => pauseForManualNavigation(1400)}
+      onPointerDown={(event) => { if (event.pointerType !== 'mouse') pauseForManualNavigation(1800) }}
+      onPointerUp={(event) => { if (event.pointerType !== 'mouse') pauseForManualNavigation(1800) }}
+      onPointerCancel={(event) => { if (event.pointerType !== 'mouse') pauseForManualNavigation(1800) }}
+    >
+      <div className={styles.carouselViewport} ref={viewportRef}>
+        <div className={styles.carouselTrack}>
+          <div className={styles.carouselGroup} ref={groupRef}>
+            {carouselProjects.map((project, index) => <CarouselCard key={project.id} project={project} index={index} onPointerEnter={handleCardPointerEnter} onPointerLeave={handleCardPointerLeave} />)}
+          </div>
+          <div className={styles.carouselGroup} aria-hidden="true">
+            {carouselProjects.map((project, index) => <CarouselCard key={`${project.id}-loop`} project={project} index={index} clone onPointerEnter={handleCardPointerEnter} onPointerLeave={handleCardPointerLeave} />)}
           </div>
         </div>
-      </article>
-      {expanded && <ExpandedProjectDetails project={project} closeButtonRef={lessButtonRef} toolbarRef={detailsToolbarRef} onCollapse={() => setExpanded(false)} />}
+      </div>
+      <div className={styles.carouselControls}>
+        <button type="button" onClick={() => move(-1)} aria-label="Ver projetos complementares anteriores"><ArrowLeft size={19} aria-hidden="true" /></button>
+        <button type="button" onClick={() => move(1)} aria-label="Ver próximos projetos complementares"><ArrowRight size={19} aria-hidden="true" /></button>
+      </div>
     </div>
+  )
+}
+
+function CarouselCard({ project, index, clone = false, onPointerEnter, onPointerLeave }: {
+  project: Project
+  index: number
+  clone?: boolean
+  onPointerEnter: (event: ReactPointerEvent<HTMLElement>) => void
+  onPointerLeave: (event: ReactPointerEvent<HTMLElement>) => void
+}) {
+  return (
+    <article className={`${styles.complementaryProject} ${project.placeholder ? styles.placeholderProject : ''}`} data-carousel-card aria-hidden={clone || undefined} onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
+      <ProjectVisual project={project} index={index + 3} />
+      <div className={styles.complementaryBody}>
+        <div className={styles.featureMeta}><span>{project.category}</span><span className={styles.status}>{project.status}</span></div>
+        <h3>{project.title}</h3>
+        <p>{project.summary}</p>
+        <div className={styles.featureTechs}>
+          {project.technologies.length > 0 ? project.technologies.map((technology) => <span key={technology}>{technology}</span>) : project.placeholder ? <span>Conteúdo demonstrativo</span> : null}
+        </div>
+        {project.demo && <div className={styles.featureActions}><a className={styles.demoButton} href={project.demo} target="_blank" rel="noreferrer" tabIndex={clone ? -1 : 0}><ExternalLink size={15} aria-hidden="true" /> Abrir projeto</a></div>}
+      </div>
+    </article>
   )
 }
 
@@ -140,9 +266,9 @@ function ExpandedProjectDetails({ project, closeButtonRef, toolbarRef, onCollaps
               <div className={styles.detailTags}>{project.technologies.length ? project.technologies.map((technology) => <span key={technology}>{technology}</span>) : <p>Tecnologias ainda não definidas.</p>}</div>
               {project.plannedTechnologies && project.plannedTechnologies.length > 0 && <><h5>Planejadas</h5><div className={styles.detailTags}>{project.plannedTechnologies.map((technology) => <span className={styles.plannedTech} key={technology}>{technology}</span>)}</div></>}
             </section>
-            <DetailText title="Decisões técnicas" content={project.technicalDecisions} />
-            <DetailText title="Desafios técnicos" content={project.challenges} />
-            <DetailText title="Resultados e validações" content={project.results} />
+            {project.technicalDecisions && <DetailText title="Decisões técnicas" content={project.technicalDecisions} />}
+            {project.challenges && <DetailText title="Desafios técnicos" content={project.challenges} />}
+            {project.results && <DetailText title="Resultados" content={project.results} />}
           </div>
         </div>
         <div className={styles.detailsFooter}>
