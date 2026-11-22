@@ -1,5 +1,4 @@
 .section { display: grid; gap: 1rem; padding-block: 3rem 5.5rem; }
-.sectionHeading { width: min(100% - 3rem, var(--content-width)); margin: 0 auto 1rem; }
 .featuredList { display: grid; gap: 0; }
 
 /* The featured work is a full-bleed part of the page composition, not a set of cards. */

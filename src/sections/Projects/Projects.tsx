@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { ArrowDownRight, ArrowUpRight, ExternalLink, Eye } from 'lucide-react'
 import { projects, type Project } from '../../data/projects'
-import { SectionHeading } from '../../components/SectionHeading'
 import styles from './Projects.module.css'
 
 export function Projects() {
@@ -9,10 +8,7 @@ export function Projects() {
   const complementaryProjects = projects.filter((project) => !project.featured)
 
   return (
-    <section className={styles.section} id="projects" aria-labelledby="projects-title">
-      <div className={styles.sectionHeading}>
-        <SectionHeading id="projects-title" title="Projetos em construção" description="Produtos digitais em diferentes estágios. Cada detalhe separa o que já funciona do que ainda está no roadmap." />
-      </div>
+    <section className={styles.section} id="projects" aria-label="Projetos">
       <div className={styles.featuredList}>
         {featuredProjects.map((project, index) => <FeaturedProject key={project.id} project={project} index={index} />)}
       </div>
