@@ -1,0 +1,17 @@
+.heading {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.heading h2,
+.heading p {
+  margin: 0;
+}
+
+.heading h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.heading p {
+  color: var(--color-muted);
+}
