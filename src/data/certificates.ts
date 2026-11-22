@@ -1,14 +1,18 @@
 export type Certificate = {
-  name: string
-  issuer: string
-  date?: string
-  hours?: string
-  file?: string
-  validationUrl?: string
-  tags?: string[]
-  learnings?: string
-  application?: string
+  id: string
+  title: string
+  institution: string
+  date: string
+  workload?: string
+  tags: string[]
+  learnings: string[]
+  practicalApplication?: string
+  image?: string
+  document?: string
+  verificationUrl?: string
+  featured: boolean
+  priority: number
 }
 
-// Adicione aqui certificados confirmados com dados e arquivos de validação.
+// Registre aqui somente certificados confirmados. Não há certificados cadastrados ainda.
 export const certificates: Certificate[] = []
