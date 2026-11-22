@@ -3,7 +3,7 @@ import styles from './Credentials.module.css'
 
 export function Credentials() {
   return (
-    <section className={styles.section} aria-labelledby="credentials-title">
+    <section className={styles.section} id="credentials" aria-labelledby="credentials-title">
       <SectionHeading id="credentials-title" title="Formação e credenciais" description="Formação, certificados e conquistas." />
     </section>
   )

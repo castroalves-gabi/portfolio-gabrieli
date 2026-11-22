@@ -1,30 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html {
-  min-width: 320px;
-  scroll-behavior: smooth;
-}
+html { min-width: 320px; scroll-behavior: smooth; scroll-padding-top: 6rem; }
 
 body {
   min-width: 320px;
   margin: 0;
-  background: var(--color-background);
+  background-color: var(--color-background);
+  background-image:
+    radial-gradient(ellipse 48rem 35rem at 8% 4%, rgba(84, 55, 145, 0.2), transparent 72%),
+    radial-gradient(ellipse 42rem 32rem at 92% 26%, rgba(24, 106, 142, 0.15), transparent 72%),
+    radial-gradient(ellipse 50rem 36rem at 48% 78%, rgba(77, 57, 131, 0.12), transparent 72%);
   color: var(--color-text);
   font-family: 'DM Sans', sans-serif;
-  line-height: 1.6;
+  line-height: 1.65;
+  transition: var(--transition-theme);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+ :root[data-theme='light'] body {
+  background-image:
+    radial-gradient(ellipse 48rem 35rem at 8% 4%, rgba(151, 130, 220, 0.17), transparent 72%),
+    radial-gradient(ellipse 42rem 32rem at 92% 26%, rgba(97, 195, 210, 0.15), transparent 72%),
+    radial-gradient(ellipse 50rem 36rem at 48% 78%, rgba(174, 164, 224, 0.13), transparent 72%);
 }
 
-button,
-input,
-textarea {
-  font: inherit;
+::selection { color: #07111b; background: var(--color-accent); }
+a { color: inherit; text-decoration: none; }
+button, input, textarea { font: inherit; }
+button { color: inherit; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
