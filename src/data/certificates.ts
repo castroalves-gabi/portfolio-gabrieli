@@ -1757,5 +1757,21 @@ export const certificates: Certificate[] = [
     "featured": false,
     "priority": 1120,
     "image": "/certificates/previews/typescript-typescript-dio-inicial-curso-fundamentos-do-ts-1h.webp"
+  },
+  {
+    "id": "daxus-imersao-claude-na-pratica",
+    "title": "Imersão Claude na Prática",
+    "institution": "Daxus",
+    "date": "22/11/2026",
+    "workload": "8 horas",
+    "tags": [
+      "Inteligência Artificial",
+      "Claude"
+    ],
+    "learnings": [],
+    "document": "/certificates/daxus-imersao-claude-na-pratica.pdf",
+    "featured": false,
+    "priority": 1121,
+    "image": "/certificates/previews/daxus-imersao-claude-na-pratica.png"
   }
 ]
