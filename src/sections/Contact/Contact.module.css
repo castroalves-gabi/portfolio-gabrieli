@@ -1,14 +1,13 @@
-.section {
-  display: grid;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 2.5rem clamp(1.5rem, 5vw, 4rem);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(16px);
-}
-.section h2 { margin: 0; font: 800 clamp(1.8rem, 4vw, 2.7rem)/1.15 'Manrope', sans-serif; letter-spacing: -0.05em; }
-.section a { display: inline-flex; width: fit-content; align-items: center; gap: 0.55rem; color: var(--color-accent); font-weight: 600; }
-.section a:hover { color: var(--color-accent-strong); }
+.section { display: grid; grid-template-columns: 1.2fr 0.8fr; align-items: center; gap: 2rem 4rem; margin-top: 1.5rem; padding: clamp(1.6rem, 5vw, 3.5rem); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-soft); backdrop-filter: blur(16px); }
+.kicker { color: var(--color-accent); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; }
+.contactCopy h2 { margin: 0.45rem 0 0.6rem; font: 800 clamp(2rem, 4.5vw, 3.2rem)/1.1 'Manrope', sans-serif; letter-spacing: -0.06em; }
+.contactCopy p { max-width: 42rem; margin: 0; color: var(--color-muted); }
+.emailAction { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1.35rem; color: var(--color-accent); font-weight: 700; }
+.emailAction:hover { color: var(--color-accent-strong); }
+.socialLinks { display: grid; gap: 0.65rem; }
+.socialLinks a { display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1rem; border: 1px solid var(--color-border); border-radius: 0.9rem; color: var(--color-muted); transition: border-color 180ms ease, color 180ms ease, transform 180ms ease; }
+.socialLinks a:hover { transform: translateX(3px); border-color: var(--color-accent); color: var(--color-accent); }
+.socialLinks a > span { display: grid; flex: 1; }
+.socialLinks strong { color: var(--color-text); font-size: 0.88rem; }
+.socialLinks small { color: var(--color-subtle); font-size: 0.73rem; }
+@media (max-width: 700px) { .section { grid-template-columns: 1fr; } }
