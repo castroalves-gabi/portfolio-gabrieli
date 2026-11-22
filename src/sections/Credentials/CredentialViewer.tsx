@@ -40,12 +40,13 @@ export function CredentialViewer({ credential, onClose }: { credential: Credenti
     <div className={styles.backdrop} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
       <section className={styles.dialog} id="credential-viewer-dialog" role="dialog" aria-modal="true" aria-labelledby="credential-viewer-title" tabIndex={-1}>
         <header className={styles.header}>
-          <div><span>Certificado</span><h2 id="credential-viewer-title">{credential.title}</h2></div>
+          <div><span>{credential.category === 'education' ? 'Formação' : credential.category === 'achievement' ? 'Conquista' : 'Certificado'}</span><h2 id="credential-viewer-title">{credential.title}</h2></div>
           <button ref={closeRef} type="button" className={styles.closeButton} aria-label="Fechar visualização" onClick={onClose}><X size={19} /></button>
         </header>
-        {credential.image ? <div className={styles.imageFrame}><img src={credential.image} alt={`Imagem ampliada do certificado ${credential.title}`} loading="lazy" /></div> : <p className={styles.noImage}>Não há uma imagem de pré-visualização cadastrada para este certificado.</p>}
+        {credential.image ? <div className={styles.imageFrame}><img src={credential.image} alt={credential.imageCaption || `Imagem ampliada do certificado ${credential.title}`} loading="lazy" /></div> : <p className={styles.noImage}>Não há uma imagem de pré-visualização cadastrada para este certificado.</p>}
+        {credential.imageCaption && <p className={styles.imageCaption}>{credential.imageCaption}</p>}
         <footer className={styles.footer}>
-          {credential.document && <a href={credential.document} target="_blank" rel="noreferrer"><ExternalLink size={16} aria-hidden="true" /> Abrir PDF original</a>}
+          {credential.document && <a href={credential.document} download><ExternalLink size={16} aria-hidden="true" /> Download PDF</a>}
           {credential.verificationUrl && <a href={credential.verificationUrl} target="_blank" rel="noreferrer"><ExternalLink size={16} aria-hidden="true" /> Validar certificado</a>}
         </footer>
       </section>

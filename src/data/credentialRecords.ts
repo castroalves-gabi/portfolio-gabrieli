@@ -17,10 +17,13 @@ export type CredentialItem = {
   learnings: string[]
   practicalApplication?: string
   image?: string
+  imageCaption?: string
   document?: string
   verificationUrl?: string
   evidence?: string
   relatedCertificateId?: string
+  curriculum?: { title: string; workload: number }[]
+  totalWorkload?: number
   featured: boolean
   priority: number
 }
@@ -35,12 +38,15 @@ export const credentialItems: CredentialItem[] = [
   ...achievements.map((item): CredentialItem => ({
     id: item.id, category: 'achievement', title: item.title, description: item.description,
     institution: item.institution, date: item.date, tags: item.tags, learnings: [],
-    evidence: item.evidence, relatedCertificateId: item.relatedCertificateId,
+    evidence: item.evidence, image: item.image, relatedCertificateId: item.relatedCertificateId,
     featured: item.featured, priority: item.priority,
   })),
   ...education.map((item): CredentialItem => ({
     id: item.id, category: 'education', title: item.course, description: item.period,
-    institution: item.institution, date: item.date, tags: item.tags, learnings: [],
+    institution: item.institution, date: item.date, workload: item.workload, tags: item.tags,
+    learnings: item.learnings ?? [], practicalApplication: item.practicalApplication,
+    image: item.image, imageCaption: item.imageCaption, document: item.document, verificationUrl: item.verificationUrl,
+    curriculum: item.curriculum, totalWorkload: item.totalWorkload,
     featured: item.featured, priority: item.priority,
   })),
 ]

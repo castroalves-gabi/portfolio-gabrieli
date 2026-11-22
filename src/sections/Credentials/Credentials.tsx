@@ -87,16 +87,22 @@ function CredentialCard({ item, selectedTags, onToggleTag, onView }: {
       </div>
       <h3>{item.title}</h3>
       {item.institution && <p className={styles.institution}>{item.institution}</p>}
-      {item.date && <p className={styles.date}>{item.date}{item.workload ? ` · ${item.workload}` : ''}</p>}
+      {(item.date || item.workload) && <p className={styles.date}>{item.date}{item.date && item.workload ? ' · ' : ''}{item.workload}</p>}
       {item.description && <p className={styles.description}>{item.description}</p>}
       {item.image && <button type="button" className={styles.imageButton} onClick={() => onView(item)} aria-label={`Ampliar imagem de ${item.title}`}><img src={item.image} alt={`Imagem do certificado ${item.title}`} loading="lazy" /></button>}
+      {item.imageCaption && <p className={styles.imageCaption}>{item.imageCaption}</p>}
+      {item.curriculum && item.curriculum.length > 0 && <div className={styles.curriculumBlock}>
+        <h4>Componentes curriculares</h4>
+        <ul>{item.curriculum.map((component) => <li key={component.title}><span>{component.title}</span><span>{component.workload} h</span></li>)}</ul>
+        {item.totalWorkload !== undefined && <p>C/H total: {item.totalWorkload} horas</p>}
+      </div>}
       {item.learnings.length > 0 && <div className={styles.learningBlock}><h4>Aprendizados</h4><ul>{item.learnings.map((learning) => <li key={learning}>{learning}</li>)}</ul></div>}
       {item.practicalApplication && <div className={styles.applicationBlock}><h4>Aplicação prática</h4><p>{item.practicalApplication}</p></div>}
       {item.tags.length > 0 && <div className={styles.recordTags} aria-label="Tags do registro">{item.tags.map((tag) => <button key={tag} type="button" className={selectedTags.includes(tag) ? styles.selectedTag : ''} aria-pressed={selectedTags.includes(tag)} onClick={() => onToggleTag(tag)}>{tag}</button>)}</div>}
       <div className={styles.recordLinks}>
-        {item.document && <a href={item.document} target="_blank" rel="noreferrer" type="application/pdf">Abrir PDF</a>}
+        {item.document && <a href={item.document} download>Download PDF</a>}
         {item.verificationUrl && <a href={item.verificationUrl} target="_blank" rel="noreferrer">Validar certificado</a>}
-        {item.evidence && <a href={item.evidence} target="_blank" rel="noreferrer">Ver evidência</a>}
+        {item.evidence && <a href={item.evidence} download>{item.evidence.toLowerCase().includes('.pdf') ? 'Download PDF' : 'Ver evidência'}</a>}
         {relatedCertificate && <button type="button" onClick={() => onView({ ...relatedCertificate, category: 'certificate', learnings: relatedCertificate.learnings })}>Ver certificado relacionado</button>}
       </div>
     </article>
