@@ -1,11 +1,37 @@
-.section { display: grid; gap: 1.8rem; padding-block: 3rem 5.5rem; }
-.projectGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
-.card { min-width: 0; overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-soft); backdrop-filter: blur(12px); transition: transform 220ms ease, border-color 220ms ease, background-color 220ms ease; }
-.card:hover { transform: translateY(-4px); border-color: var(--color-border-strong); background: var(--color-surface-strong); }
-.thumbnail { position: relative; display: grid; min-height: 12rem; overflow: hidden; place-items: center; background: radial-gradient(ellipse at 68% 25%, rgba(98, 84, 179, 0.3), transparent 46%), linear-gradient(140deg, rgba(25, 39, 68, 0.9), rgba(10, 17, 31, 0.9)); }
+.section { display: grid; gap: 1rem; padding-block: 3rem 5.5rem; }
+.sectionHeading { width: min(100% - 3rem, var(--content-width)); margin: 0 auto 1rem; }
+.featuredList { display: grid; gap: 0; }
+
+/* The featured work is a full-bleed part of the page composition, not a set of cards. */
+.featuredProject { width: 100vw; margin-left: calc(50% - 50vw); padding-block: clamp(3.5rem, 7vw, 6.5rem); scroll-margin-top: 5.8rem; }
+.featureLayout { display: grid; width: min(100%, 100rem); grid-template-columns: minmax(18rem, 0.78fr) minmax(0, 1.22fr); align-items: center; gap: clamp(2rem, 6vw, 6rem); margin-inline: auto; padding-inline: clamp(1.25rem, 7vw, 7.5rem); }
+.featureCopy { min-width: 0; }
+.featureMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem 0.8rem; color: var(--color-subtle); font-size: 0.7rem; letter-spacing: 0.04em; }
+.status { padding: 0.22rem 0.55rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-muted); white-space: nowrap; }
+.published { border-color: color-mix(in srgb, var(--color-accent) 35%, transparent); color: var(--color-accent); }
+.inProgress { border-color: color-mix(in srgb, var(--color-accent-strong) 35%, transparent); color: var(--color-accent-strong); }
+.featureCopy h3 { margin: 1rem 0 0.4rem; font: 800 clamp(2.6rem, 6vw, 5.2rem)/1 'Manrope', sans-serif; letter-spacing: -0.075em; }
+.featureSummary { max-width: 36rem; margin: 0; color: var(--color-muted); font-size: clamp(1rem, 1.5vw, 1.18rem); line-height: 1.65; }
+.previewFeatures { margin-top: 1.1rem; }
+.previewFeatures > span { color: var(--color-text); font-size: 0.74rem; font-weight: 700; }
+.previewFeatures ul { display: grid; gap: 0.35rem; margin: 0.45rem 0 0; padding: 0; list-style: none; }
+.previewFeatures li { position: relative; padding-left: 1rem; color: var(--color-muted); font-size: 0.82rem; line-height: 1.5; }
+.previewFeatures li::before { position: absolute; left: 0; color: var(--color-accent); content: '·'; }
+.featureTechs { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 1.2rem; }
+.featureTechs span { padding: 0.3rem 0.57rem; border: 1px solid var(--color-border); border-radius: 0.45rem; color: var(--color-subtle); font-size: 0.72rem; }
+.featureActions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.2rem; margin-top: 1.45rem; }
+.demoButton, .moreButton, .lessButton { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; padding: 0.72rem 0.95rem; border: 1px solid var(--color-border-strong); border-radius: 999px; background: var(--color-surface); color: var(--color-text); font: 700 0.82rem 'DM Sans', sans-serif; text-decoration: none; cursor: pointer; transition: border-color 160ms ease, color 160ms ease, background 160ms ease; }
+.demoButton:hover, .moreButton:hover, .lessButton:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.moreButton { border-color: color-mix(in srgb, var(--color-accent) 40%, transparent); background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.lessButton { border-color: color-mix(in srgb, var(--color-accent) 40%, transparent); }
+
+.thumbnail { position: relative; display: grid; min-height: 12rem; overflow: hidden; place-items: center; border-radius: 1rem; background: radial-gradient(ellipse at 68% 25%, rgba(98, 84, 179, 0.3), transparent 46%), linear-gradient(140deg, rgba(25, 39, 68, 0.9), rgba(10, 17, 31, 0.9)); }
+.thumbnailLarge { min-height: 0; aspect-ratio: 1.5; border-radius: 1.35rem; }
+.thumbnailImage { background: var(--color-surface-strong); }
+.thumbnailImage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
 .art2 { background: radial-gradient(ellipse at 25% 70%, rgba(32, 142, 159, 0.32), transparent 48%), linear-gradient(140deg, rgba(21, 37, 57, 0.9), rgba(10, 17, 31, 0.9)); }
 .art3 { background: radial-gradient(ellipse at 70% 72%, rgba(133, 82, 154, 0.28), transparent 48%), linear-gradient(140deg, rgba(31, 33, 65, 0.9), rgba(10, 17, 31, 0.9)); }
-.art4 { min-height: 10rem; background: radial-gradient(ellipse at 50% 35%, rgba(66, 146, 157, 0.25), transparent 50%), linear-gradient(140deg, rgba(23, 42, 61, 0.9), rgba(10, 17, 31, 0.9)); }
+.art4 { background: radial-gradient(ellipse at 50% 35%, rgba(66, 146, 157, 0.25), transparent 50%), linear-gradient(140deg, rgba(23, 42, 61, 0.9), rgba(10, 17, 31, 0.9)); }
 .thumbOrb { position: absolute; top: 20%; left: 55%; width: 8.5rem; aspect-ratio: 1; border: 1px solid rgba(185, 178, 255, 0.32); border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(184, 164, 255, 0.33), rgba(99, 180, 200, 0.08) 58%, transparent 69%); box-shadow: 0 0 70px rgba(124, 105, 215, 0.16); transform: translate(-50%, -8%); }
 .art2 .thumbOrb { top: 40%; left: 50%; width: 10rem; border-radius: 32% 68% 60% 40%; transform: translate(-50%, -50%) rotate(-24deg); }
 .art3 .thumbOrb { top: 25%; left: 57%; width: 9rem; border-radius: 40% 60% 35% 65%; transform: translate(-50%, -20%) rotate(31deg); }
@@ -13,22 +39,56 @@
 .thumbLines { position: absolute; inset: 0; background: repeating-linear-gradient(125deg, transparent 0 32px, rgba(200, 216, 255, 0.035) 33px, transparent 34px 62px); mask-image: linear-gradient(transparent, black 30%, transparent 92%); }
 .thumbCaption { position: absolute; top: 0.85rem; left: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; color: rgba(225, 233, 249, 0.68); font-size: 0.68rem; letter-spacing: 0.07em; text-transform: uppercase; }
 .thumbTitle { position: relative; z-index: 1; color: #f3f4fc; font: 800 clamp(1.6rem, 3vw, 2.2rem)/1 'Manrope', sans-serif; letter-spacing: -0.06em; text-shadow: 0 2px 20px rgba(3, 8, 18, 0.7); }
-.cardBody { padding: 1.2rem; }
-.cardMeta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem; color: var(--color-subtle); font-size: 0.66rem; }
-.status { padding: 0.2rem 0.5rem; border: 1px solid var(--color-border); border-radius: 999px; color: var(--color-muted); white-space: nowrap; }
-.published { border-color: color-mix(in srgb, var(--color-accent) 35%, transparent); color: var(--color-accent); }
-.card h3 { margin: 0.75rem 0 0.25rem; font: 700 1.3rem/1.3 'Manrope', sans-serif; letter-spacing: -0.035em; }
-.cardBody > p { min-height: 3.2rem; margin: 0; color: var(--color-muted); font-size: 0.85rem; line-height: 1.55; }
-.tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1rem; }
-.tags span { padding: 0.28rem 0.5rem; border: 1px solid var(--color-border); border-radius: 0.4rem; color: var(--color-subtle); font-size: 0.68rem; }
-.tags .unknownTech { border-style: dashed; }
-.detailsButton { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 1rem; padding: 0; border: 0; background: none; color: var(--color-accent); font-size: 0.83rem; font-weight: 700; cursor: pointer; }
-.detailsButton:hover { color: var(--color-accent-strong); }
-.complementary { display: grid; gap: 1rem; margin-top: 1.4rem; }
-.complementaryHeading { display: flex; align-items: baseline; gap: 0.8rem; }
+
+.expandedPanel { width: 100%; margin-top: 2rem; animation: expand-in 260ms ease both; }
+.detailsToolbar { position: sticky; z-index: 4; top: 5.6rem; display: flex; width: min(100% - 2.5rem, 86rem); align-items: center; justify-content: space-between; gap: 1rem; margin: 0 auto; padding: 0.65rem 0.9rem; border: 1px solid var(--color-border); border-radius: 0.9rem; background: color-mix(in srgb, var(--color-background) 86%, transparent); backdrop-filter: blur(18px); scroll-margin-top: 6rem; }
+.detailsToolbar > span { color: var(--color-muted); font-size: 0.78rem; font-weight: 600; }
+.detailsContent { width: min(100%, 86rem); margin-inline: auto; padding: 1.6rem clamp(1.25rem, 7vw, 7.5rem) 0; }
+.longDescription { max-width: 66rem; margin: 0 0 1.5rem; color: var(--color-muted); font-size: 1rem; }
+.detailsColumns { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(18rem, 0.92fr); gap: clamp(2rem, 6vw, 5.5rem); }
+.detailBlock { margin: 0 0 1.55rem; }
+.detailBlock h4 { margin: 0 0 0.65rem; color: var(--color-text); font: 700 0.95rem 'Manrope', sans-serif; }
+.detailBlock h5 { margin: 0.9rem 0 0.45rem; color: var(--color-subtle); font-size: 0.75rem; font-weight: 600; }
+.detailList { display: grid; gap: 0.65rem; margin: 0; padding: 0; list-style: none; }
+.detailList li { display: grid; grid-template-columns: 1rem 1fr; gap: 0.5rem; color: var(--color-muted); font-size: 0.86rem; line-height: 1.55; }
+.detailList li > span { color: var(--color-accent); }
+.detailText { margin: 0; color: var(--color-muted); font-size: 0.86rem; line-height: 1.6; }
+.detailTags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.detailTags span { padding: 0.32rem 0.58rem; border: 1px solid var(--color-border); border-radius: 0.45rem; color: var(--color-muted); font-size: 0.75rem; }
+.detailTags p { margin: 0; color: var(--color-subtle); font-size: 0.84rem; }
+.detailTags .plannedTech { border-style: dashed; color: var(--color-subtle); }
+.detailsFooter { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin-top: 0.4rem; }
+.releaseStatus { color: var(--color-subtle); font-size: 0.78rem; }
+
+.complementary { width: min(100% - 3rem, var(--content-width)); margin: 3.5rem auto 0; }
+.complementaryHeading { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 1rem; }
 .complementaryHeading span { color: var(--color-text); font: 700 1rem 'Manrope', sans-serif; }
 .complementaryHeading p { margin: 0; color: var(--color-subtle); font-size: 0.8rem; }
-.complementary .projectGrid { grid-template-columns: minmax(16rem, 0.55fr) minmax(0, 1fr) minmax(0, 1fr); }
-.secondaryCard { grid-column: 1; }
-@media (max-width: 900px) { .projectGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .complementary .projectGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .secondaryCard { grid-column: auto; } }
-@media (max-width: 620px) { .projectGrid, .complementary .projectGrid { grid-template-columns: 1fr; } .section { padding-block: 2rem 4rem; } .thumbnail { min-height: 10rem; } .cardBody > p { min-height: auto; } .complementaryHeading { display: grid; gap: 0.15rem; } }
+.complementaryList { display: grid; grid-template-columns: minmax(0, 27rem); gap: 1.2rem; }
+.complementaryEntry { display: grid; gap: 1.2rem; }
+.complementaryProject { overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-soft); backdrop-filter: blur(12px); }
+.complementaryProject .thumbnail { min-height: 10rem; border-radius: 0; }
+.complementaryBody { padding: 1.2rem; }
+.complementaryBody h3 { margin: 0.75rem 0 0.25rem; font: 700 1.3rem/1.3 'Manrope', sans-serif; letter-spacing: -0.035em; }
+.complementaryBody > p { margin: 0; color: var(--color-muted); font-size: 0.85rem; line-height: 1.55; }
+
+@keyframes expand-in { from { opacity: 0; transform: translateY(-0.5rem); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .expandedPanel { animation: none; } }
+@media (max-width: 820px) {
+  .featureLayout { grid-template-columns: 1fr; gap: 1.8rem; }
+  .thumbnailLarge { order: -1; aspect-ratio: 1.7; }
+  .detailsColumns { grid-template-columns: 1fr; gap: 0; }
+}
+@media (max-width: 620px) {
+  .section { padding-block: 2rem 4rem; }
+  .sectionHeading { width: min(100% - 1.5rem, var(--content-width)); }
+  .featuredProject { padding-block: 3rem; }
+  .featureLayout { padding-inline: 1.25rem; }
+  .featureCopy h3 { font-size: clamp(2.5rem, 13vw, 4rem); }
+  .thumbnailLarge { aspect-ratio: 1.25; }
+  .detailsToolbar { top: 4.8rem; width: calc(100% - 1.25rem); }
+  .detailsContent { padding-inline: 1.25rem; }
+  .complementary { width: min(100% - 1.5rem, var(--content-width)); margin-top: 2.5rem; }
+  .complementaryHeading { display: grid; gap: 0.15rem; }
+  .complementaryList { grid-template-columns: 1fr; }
+}
