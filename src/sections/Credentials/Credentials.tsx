@@ -91,8 +91,6 @@ function CredentialCard({ item, selectedTags, onToggleTag, onView }: {
   const certificate = item.category === 'certificate'
   const achievement = item.category === 'achievement'
   const categoryLabel = certificate ? 'Certificado' : achievement ? 'Conquista' : 'Formação'
-  const relatedCertificate = item.relatedCertificateId ? certificates.find((value) => value.id === item.relatedCertificateId) : undefined
-  const hasLinks = Boolean(item.document || item.verificationUrl || item.evidence || relatedCertificate)
 
   return (
     <article className={styles.recordCard} data-credential-card>
@@ -110,7 +108,6 @@ function CredentialCard({ item, selectedTags, onToggleTag, onView }: {
       </div>
       <div className={styles.cardActions}>
         <button type="button" onClick={() => onView(item)}>Ver detalhes</button>
-        {hasLinks && <span aria-hidden="true">{item.document || item.evidence ? 'Arquivo disponível' : item.verificationUrl ? 'Validação online' : 'Certificado relacionado'}</span>}
       </div>
     </article>
   )
