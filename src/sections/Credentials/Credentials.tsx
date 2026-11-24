@@ -11,17 +11,24 @@ export function Credentials() {
   const [category, setCategory] = useState<CredentialCategoryFilter>('all')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [query, setQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [viewing, setViewing] = useState<CredentialItem | null>(null)
   const filtered = useMemo(() => filterAndSortCredentials(credentialItems, { category, tags: selectedTags, query }), [category, selectedTags, query])
   const hasFilters = category !== 'all' || selectedTags.length > 0 || query.trim().length > 0
+  const pageSize = 20
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const visiblePage = Math.min(currentPage, pageCount)
+  const visibleItems = filtered.slice((visiblePage - 1) * pageSize, visiblePage * pageSize)
 
   const toggleTag = useCallback((tag: string) => {
+    setCurrentPage(1)
     setSelectedTags((current) => current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag])
   }, [])
   const clearFilters = useCallback(() => {
     setCategory('all')
     setSelectedTags([])
     setQuery('')
+    setCurrentPage(1)
   }, [])
   const closeViewer = useCallback(() => setViewing(null), [])
 
@@ -39,8 +46,8 @@ export function Credentials() {
           <label className={styles.searchBox}>
             <Search size={18} aria-hidden="true" />
             <span className={styles.srOnly}>Buscar registros</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, instituição, tag ou aprendizado" />
-            {query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar busca"><X size={16} /></button>}
+            <input value={query} onChange={(event) => { setQuery(event.target.value); setCurrentPage(1) }} placeholder="Buscar por título, instituição, tag ou aprendizado" />
+            {query && <button type="button" onClick={() => { setQuery(''); setCurrentPage(1) }} aria-label="Limpar busca"><X size={16} /></button>}
           </label>
           <span className={styles.resultCount} aria-live="polite">{filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}</span>
           {hasFilters && <button className={styles.clearButton} type="button" onClick={clearFilters}>Limpar filtros</button>}
@@ -48,7 +55,7 @@ export function Credentials() {
         <div className={styles.filterGroup}>
           <span className={styles.filterLabel}>Categoria</span>
           <div className={styles.filterOptions} role="group" aria-label="Filtrar por categoria">
-            {credentialCategories.map((option) => <button key={option.value} type="button" className={`${styles.filterChip} ${category === option.value ? styles.activeChip : ''}`} aria-pressed={category === option.value} onClick={() => setCategory(option.value)}>{option.label}</button>)}
+            {credentialCategories.map((option) => <button key={option.value} type="button" className={`${styles.filterChip} ${category === option.value ? styles.activeChip : ''}`} aria-pressed={category === option.value} onClick={() => { setCategory(option.value); setCurrentPage(1) }}>{option.label}</button>)}
           </div>
         </div>
         <div className={styles.filterGroup}>
@@ -59,9 +66,16 @@ export function Credentials() {
         </div>
       </div>
 
-      {filtered.length ? <div className={styles.staticRecords}><div className={styles.recordGrid}>
-        {filtered.map((item) => <CredentialCard key={`${item.category}-${item.id}`} item={item} selectedTags={selectedTags} onToggleTag={toggleTag} onView={setViewing} />)}
-      </div></div> : <div className={styles.emptyState}><Award size={22} aria-hidden="true" /><p>{certificates.length === 0 && category === 'certificates' && !selectedTags.length && !query ? 'Ainda não há certificados confirmados cadastrados.' : 'Nenhum registro corresponde a esses filtros.'}</p>{hasFilters && <button className={styles.clearButton} type="button" onClick={clearFilters}>Limpar filtros</button>}</div>}
+      {filtered.length ? <div className={styles.staticRecords}>
+        <div className={styles.recordGrid}>
+          {visibleItems.map((item) => <CredentialCard key={`${item.category}-${item.id}`} item={item} selectedTags={selectedTags} onToggleTag={toggleTag} onView={setViewing} />)}
+        </div>
+        {pageCount > 1 && <nav className={styles.pagination} aria-label="Paginação dos registros">
+          <button type="button" onClick={() => setCurrentPage((page) => page - 1)} disabled={visiblePage === 1}>Anterior</button>
+          <span aria-live="polite">Página {visiblePage} de {pageCount}</span>
+          <button type="button" onClick={() => setCurrentPage((page) => page + 1)} disabled={visiblePage === pageCount}>Próxima</button>
+        </nav>}
+      </div> : <div className={styles.emptyState}><Award size={22} aria-hidden="true" /><p>{certificates.length === 0 && category === 'certificates' && !selectedTags.length && !query ? 'Ainda não há certificados confirmados cadastrados.' : 'Nenhum registro corresponde a esses filtros.'}</p>{hasFilters && <button className={styles.clearButton} type="button" onClick={clearFilters}>Limpar filtros</button>}</div>}
 
       <CredentialViewer credential={viewing} onClose={closeViewer} onView={setViewing} />
     </section>
