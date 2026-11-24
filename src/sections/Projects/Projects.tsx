@@ -211,9 +211,71 @@ function CarouselCard({ project, index, clone = false, onPointerEnter, onPointer
   onPointerEnter: (event: ReactPointerEvent<HTMLElement>) => void
   onPointerLeave: (event: ReactPointerEvent<HTMLElement>) => void
 }) {
+  const visualRef = useRef<HTMLDivElement>(null)
+  const zoomFrame = useRef<number | undefined>(undefined)
+  const zoomStartedAt = useRef(0)
+  const zoomScale = useRef(1)
+
+  useEffect(() => () => {
+    if (zoomFrame.current !== undefined) window.cancelAnimationFrame(zoomFrame.current)
+  }, [])
+
+  const getZoomImage = () => visualRef.current?.querySelector<HTMLImageElement>('img')
+
+  const stopZoomFrame = () => {
+    if (zoomFrame.current !== undefined) {
+      window.cancelAnimationFrame(zoomFrame.current)
+      zoomFrame.current = undefined
+    }
+  }
+
+  const handlePointerEnter = (event: ReactPointerEvent<HTMLElement>) => {
+    onPointerEnter(event)
+    if (clone || event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const image = getZoomImage()
+    if (!image) return
+
+    stopZoomFrame()
+    image.style.transition = 'none'
+    zoomStartedAt.current = performance.now()
+
+    const startScale = zoomScale.current
+    const animate = (time: number) => {
+      const elapsed = time - zoomStartedAt.current
+      const progress = Math.min(elapsed / 2200, 1)
+      const easedProgress = 1 - Math.pow(1 - progress, 2)
+      zoomScale.current = startScale + (1.16 - startScale) * easedProgress
+      image.style.transform = `scale(${zoomScale.current})`
+      if (progress < 1) zoomFrame.current = window.requestAnimationFrame(animate)
+      else zoomFrame.current = undefined
+    }
+
+    zoomFrame.current = window.requestAnimationFrame(animate)
+  }
+
+  const handlePointerLeave = (event: ReactPointerEvent<HTMLElement>) => {
+    onPointerLeave(event)
+    if (clone || event.pointerType !== 'mouse') return
+
+    const image = getZoomImage()
+    if (!image) return
+
+    stopZoomFrame()
+    image.style.transition = 'transform 420ms cubic-bezier(0.22, 1, 0.36, 1)'
+    zoomScale.current = 1
+    image.style.transform = 'scale(1)'
+  }
+
   return (
-    <article className={`${styles.complementaryProject} ${project.placeholder ? styles.placeholderProject : ''}`} data-carousel-card aria-hidden={clone || undefined} onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave}>
-      <ProjectVisual project={project} index={index + 3} />
+    <article
+      className={`${styles.complementaryProject} ${project.placeholder ? styles.placeholderProject : ''}`}
+      data-carousel-card
+      aria-hidden={clone || undefined}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+    >
+      <ProjectVisual project={project} index={index + 3} visualRef={visualRef} />
       <div className={styles.complementaryBody}>
         <div className={styles.featureMeta}><span>{project.category}</span><span className={styles.status}>{project.status}</span></div>
         <h3>{project.title}</h3>
@@ -227,9 +289,14 @@ function CarouselCard({ project, index, clone = false, onPointerEnter, onPointer
   )
 }
 
-function ProjectVisual({ project, index, large = false }: { project: Project; index: number; large?: boolean }) {
+function ProjectVisual({ project, index, large = false, visualRef }: {
+  project: Project
+  index: number
+  large?: boolean
+  visualRef?: RefObject<HTMLDivElement>
+}) {
   return (
-    <div className={`${styles.thumbnail} ${styles[`art${index + 1}`]} ${project.images.length ? styles.thumbnailImage : ''} ${large ? styles.thumbnailLarge : ''}`} aria-label={project.images.length ? undefined : `Composição visual de ${project.title}`}>
+    <div ref={visualRef} className={`${styles.thumbnail} ${styles[`art${index + 1}`]} ${project.images.length ? styles.thumbnailImage : ''} ${large ? styles.thumbnailLarge : ''}`} aria-label={project.images.length ? undefined : `Composição visual de ${project.title}`}>
       {project.images.length ? <img src={project.images[0].src} alt={project.images[0].alt} loading="lazy" /> : <>
         <span className={styles.thumbOrb} />
         <span className={styles.thumbLines} />
