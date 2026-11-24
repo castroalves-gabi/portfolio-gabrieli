@@ -29,12 +29,164 @@ export function Projects() {
 function FeaturedProject({ project, index }: { project: Project; index: number }) {
   const [expanded, setExpanded] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+  const visualRef = useRef<HTMLDivElement>(null)
   const moreButtonRef = useRef<HTMLButtonElement>(null)
   const lessButtonRef = useRef<HTMLButtonElement>(null)
   const detailsToolbarRef = useRef<HTMLDivElement>(null)
   const wasExpanded = useRef(false)
+  const zoomFrame = useRef<number | undefined>(undefined)
+  const zoomIdleTimer = useRef<number | undefined>(undefined)
+  const zoomImage = useRef<HTMLImageElement | null>(null)
+  const zoomScale = useRef(1)
+  const zoomTransitionStartScale = useRef(1)
+  const zoomTransitionTargetScale = useRef(1)
+  const zoomTransitionStartAt = useRef(0)
+  const zoomTransitionDuration = useRef(0)
+  const zoomPoint = useRef({ x: 50, y: 50 })
+  const zoomCurrentPoint = useRef({ x: 50, y: 50 })
+  const lastPointerPosition = useRef<{ x: number; y: number } | undefined>(undefined)
+  const lastZoomFrameAt = useRef(0)
+  const zoomActive = useRef(false)
+  const zoomDirection = useRef<'in' | 'out' | undefined>(undefined)
   const hasImplementedHighlights = project.implementedFeatures.length > 0
   const highlights = hasImplementedHighlights ? project.implementedFeatures.slice(0, 3) : project.plannedFeatures.slice(0, 3)
+
+  useEffect(() => () => {
+    if (zoomFrame.current !== undefined) window.cancelAnimationFrame(zoomFrame.current)
+    if (zoomIdleTimer.current !== undefined) window.clearTimeout(zoomIdleTimer.current)
+    const image = visualRef.current?.querySelector<HTMLImageElement>('img')
+    if (image) {
+      image.style.transform = 'scale(1)'
+      image.style.transformOrigin = '50% 50%'
+    }
+  }, [])
+
+  const updateZoomPoint = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect()
+    if (bounds.width === 0 || bounds.height === 0) return
+    zoomPoint.current = {
+      x: Math.max(0, Math.min(100, ((event.clientX - bounds.left) / bounds.width) * 100)),
+      y: Math.max(0, Math.min(100, ((event.clientY - bounds.top) / bounds.height) * 100)),
+    }
+  }
+
+  function animateZoom(time: number) {
+    zoomFrame.current = undefined
+    const image = zoomImage.current
+    if (!image) return
+
+    const frameDelta = lastZoomFrameAt.current ? Math.min(time - lastZoomFrameAt.current, 50) : 16
+    lastZoomFrameAt.current = time
+    const focusProgress = 1 - Math.exp(-frameDelta / 45)
+    zoomCurrentPoint.current = {
+      x: zoomCurrentPoint.current.x + (zoomPoint.current.x - zoomCurrentPoint.current.x) * focusProgress,
+      y: zoomCurrentPoint.current.y + (zoomPoint.current.y - zoomCurrentPoint.current.y) * focusProgress,
+    }
+
+    if (zoomDirection.current) {
+      const progress = Math.min((time - zoomTransitionStartAt.current) / zoomTransitionDuration.current, 1)
+      const easedProgress = progress * progress * progress * (progress * (progress * 6 - 15) + 10)
+      zoomScale.current = zoomTransitionStartScale.current
+        + (zoomTransitionTargetScale.current - zoomTransitionStartScale.current) * easedProgress
+      if (progress >= 1) {
+        zoomScale.current = zoomTransitionTargetScale.current
+        zoomDirection.current = undefined
+      }
+    }
+
+    const transform = `scale(${zoomScale.current})`
+    const transformOrigin = `${zoomCurrentPoint.current.x}% ${zoomCurrentPoint.current.y}%`
+    if (image.style.transform !== transform) image.style.transform = transform
+    if (image.style.transformOrigin !== transformOrigin) image.style.transformOrigin = transformOrigin
+
+    const focusDistance = Math.hypot(
+      zoomPoint.current.x - zoomCurrentPoint.current.x,
+      zoomPoint.current.y - zoomCurrentPoint.current.y,
+    )
+    if (zoomDirection.current || focusDistance > 0.1) {
+      zoomFrame.current = window.requestAnimationFrame(animateZoom)
+    } else if (!zoomActive.current && zoomScale.current === 1) {
+      image.style.transformOrigin = '50% 50%'
+      zoomCurrentPoint.current = { x: 50, y: 50 }
+      zoomPoint.current = { x: 50, y: 50 }
+      zoomImage.current = null
+    }
+  }
+
+  function beginZoomTransition(targetScale: number, duration: number) {
+    const image = zoomImage.current
+    if (!image) return
+    if (zoomFrame.current !== undefined) window.cancelAnimationFrame(zoomFrame.current)
+
+    zoomDirection.current = undefined
+    if (Math.abs(targetScale - zoomScale.current) < 0.001) {
+      zoomScale.current = targetScale
+      image.style.transform = `scale(${targetScale})`
+      if (!zoomActive.current && targetScale === 1) {
+        image.style.transformOrigin = '50% 50%'
+        zoomImage.current = null
+      }
+      return
+    }
+
+    zoomTransitionStartScale.current = zoomScale.current
+    zoomTransitionTargetScale.current = targetScale
+    zoomTransitionStartAt.current = performance.now()
+    zoomTransitionDuration.current = duration
+    zoomDirection.current = targetScale > zoomScale.current ? 'in' : 'out'
+    lastZoomFrameAt.current = 0
+    zoomFrame.current = window.requestAnimationFrame(animateZoom)
+  }
+
+  function scheduleIdleReturn() {
+    if (zoomIdleTimer.current !== undefined) window.clearTimeout(zoomIdleTimer.current)
+    zoomIdleTimer.current = window.setTimeout(() => {
+      zoomIdleTimer.current = undefined
+      if (zoomActive.current) beginZoomTransition(1, 3000)
+    }, 1000)
+  }
+
+  const handleVisualPointerEnter = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const image = visualRef.current?.querySelector<HTMLImageElement>('img')
+    if (!image) return
+    zoomImage.current = image
+    updateZoomPoint(event)
+    zoomCurrentPoint.current = { ...zoomPoint.current }
+    lastPointerPosition.current = { x: event.clientX, y: event.clientY }
+    const currentTransform = window.getComputedStyle(image).transform
+    const currentScale = currentTransform === 'none' ? 1 : new DOMMatrixReadOnly(currentTransform).a
+    zoomScale.current = Math.max(1, Math.min(2, currentScale))
+    zoomActive.current = true
+    beginZoomTransition(2, 2200)
+    scheduleIdleReturn()
+  }
+
+  const handleVisualPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || !zoomActive.current) return
+    const previousPosition = lastPointerPosition.current
+    if (previousPosition && Math.hypot(event.clientX - previousPosition.x, event.clientY - previousPosition.y) < 0.5) return
+
+    lastPointerPosition.current = { x: event.clientX, y: event.clientY }
+    updateZoomPoint(event)
+    scheduleIdleReturn()
+    if (zoomDirection.current === 'out' || (zoomDirection.current === undefined && zoomScale.current < 1.999)) {
+      beginZoomTransition(2, 1200)
+    } else if (zoomFrame.current === undefined) {
+      zoomFrame.current = window.requestAnimationFrame(animateZoom)
+    }
+  }
+
+  const handleVisualPointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse' || !zoomActive.current) return
+    zoomActive.current = false
+    lastPointerPosition.current = undefined
+    if (zoomIdleTimer.current !== undefined) {
+      window.clearTimeout(zoomIdleTimer.current)
+      zoomIdleTimer.current = undefined
+    }
+    beginZoomTransition(1, 3000)
+  }
 
   useEffect(() => {
     if (expanded) {
@@ -66,7 +218,15 @@ function FeaturedProject({ project, index }: { project: Project; index: number }
             {!expanded && <button ref={moreButtonRef} type="button" className={styles.moreButton} aria-expanded="false" onClick={() => setExpanded(true)}>Ver mais <ArrowDownRight size={17} aria-hidden="true" /></button>}
           </div>
         </div>
-        <ProjectVisual project={project} index={index} large />
+        <ProjectVisual
+          project={project}
+          index={index}
+          large
+          visualRef={visualRef}
+          onPointerEnter={handleVisualPointerEnter}
+          onPointerMove={handleVisualPointerMove}
+          onPointerLeave={handleVisualPointerLeave}
+        />
       </div>
       {expanded && <ExpandedProjectDetails project={project} closeButtonRef={lessButtonRef} toolbarRef={detailsToolbarRef} onCollapse={() => setExpanded(false)} />}
     </article>
@@ -289,14 +449,24 @@ function CarouselCard({ project, index, clone = false, onPointerEnter, onPointer
   )
 }
 
-function ProjectVisual({ project, index, large = false, visualRef }: {
+function ProjectVisual({ project, index, large = false, visualRef, onPointerEnter, onPointerMove, onPointerLeave }: {
   project: Project
   index: number
   large?: boolean
   visualRef?: RefObject<HTMLDivElement>
+  onPointerEnter?: (event: ReactPointerEvent<HTMLDivElement>) => void
+  onPointerMove?: (event: ReactPointerEvent<HTMLDivElement>) => void
+  onPointerLeave?: (event: ReactPointerEvent<HTMLDivElement>) => void
 }) {
   return (
-    <div ref={visualRef} className={`${styles.thumbnail} ${styles[`art${index + 1}`]} ${project.images.length ? styles.thumbnailImage : ''} ${large ? styles.thumbnailLarge : ''}`} aria-label={project.images.length ? undefined : `Composição visual de ${project.title}`}>
+    <div
+      ref={visualRef}
+      className={`${styles.thumbnail} ${styles[`art${index + 1}`]} ${project.images.length ? styles.thumbnailImage : ''} ${large ? styles.thumbnailLarge : ''}`}
+      aria-label={project.images.length ? undefined : `Composição visual de ${project.title}`}
+      onPointerEnter={onPointerEnter}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
       {project.images.length ? <img src={project.images[0].src} alt={project.images[0].alt} loading="lazy" /> : <>
         <span className={styles.thumbOrb} />
         <span className={styles.thumbLines} />
