@@ -1719,6 +1719,7 @@ export const certificates: Certificate[] = [
     "title": "React com TS",
     "institution": "DIO",
     "date": "31/01/2024",
+    "workload": "4 horas",
     "tags": [
       "TypeScript"
     ],
